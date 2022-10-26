@@ -69,7 +69,6 @@ jobs:
 
     # Configure Docker to use the gcloud command-line tool as a credential
     # helper for authentication
-    - name: Docker configuration
     - run: |-
         gcloud --quiet auth configure-docker
 
