@@ -93,6 +93,6 @@ jobs:
     # Deploy sample image to the GKE cluster
     - name: Deploy
       run: |-
-        sed -e 's|IMAGE_NAME|gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA|g' ./deployment/deployment.yml | kubectl apply -f -
+        sed -e "s|IMAGE_NAME|gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA|g" ./deployment/deployment.yml | kubectl apply -f -
         kubectl rollout status deployment/$DEPLOYMENT_NAME
         kubectl get services -o wide
