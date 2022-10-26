@@ -28,6 +28,7 @@ on:
     - master
 
 env:
+  GAR_LOCATION: us-central1
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
   GKE_CLUSTER: swaps-prices-cluster # Add your cluster name here.
   GKE_ZONE: us-central1   # Add your cluster zone here.
@@ -66,9 +67,11 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v0
 
+    # Configure Docker to use the gcloud command-line tool as a credential
+    # helper for authentication
     - name: Docker configuration
-      run: |-
-        echo ${{steps.auth.outputs.access_token}} | docker login -u oauth2accesstoken --password-stdin https://$GAR_LOCATION-docker.pkg.dev
+    - run: |-
+        gcloud --quiet auth configure-docker
 
     # Get the GKE credentials so we can deploy to the cluster
     - run: |-
