@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node-dev --inspect --trace-warnings --respawn index.ts",
+    "dev": "ts-node-dev --inspect --trace-warnings --respawn ./src/index.ts",
     "client": "ts-node-dev --inspect --trace-warnings --respawn ./test/client.ts",
     "lint:fix": "eslint --fix"
   },
