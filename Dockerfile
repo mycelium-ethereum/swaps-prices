@@ -12,7 +12,7 @@ RUN yarn
 RUN yarn run tsc
 
 # Expose correct ports
-EXPOSE 3030
+EXPOSE 80
 
 # Start the server
 CMD ["node", "dist/index.js"]
