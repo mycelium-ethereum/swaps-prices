@@ -28,26 +28,26 @@ export const networkTokens: Record<string, LabelledToken[]> = {
       knownToken: KnownToken.CRV
     }
   ],
-  // [NETWORKS.ARBITRUM_RINKEBY]: [
-    // {
-      // address: '0xB47e6A5f8b33b3F17603C83a0535A9dcD7E32681',
-      // knownToken: KnownToken.ETH
-    // }, {
-      // address: '0x5360425C5dd9a3B3a41F619515F9318caA34CfC9',
-      // knownToken: KnownToken.BTC
-    // }
-  // ],
-  // [NETWORKS.ARBITRUM_GOERLI]: [
-    // {
-      // address: '0x08466D6683d2A39E3597500c1F17b792555FCAB9',
-      // knownToken: KnownToken.ETH
-    // }, {
-      // address: '0x4CC823834038c92CFA66C40C7806959529A3D782',
-      // knownToken: KnownToken.BTC
-    // },
-    // {
-      // address: '0x6E7155bde03E582e9920421Adf14E10C15dBe890',
-      // knownToken: KnownToken.LINK
-    // }
-  // ]
+  [NETWORKS.ARBITRUM_RINKEBY]: [
+    {
+      address: '0xB47e6A5f8b33b3F17603C83a0535A9dcD7E32681',
+      knownToken: KnownToken.ETH
+    }, {
+      address: '0x5360425C5dd9a3B3a41F619515F9318caA34CfC9',
+      knownToken: KnownToken.BTC
+    }
+  ],
+  [NETWORKS.ARBITRUM_GOERLI]: [
+    {
+      address: '0x08466D6683d2A39E3597500c1F17b792555FCAB9',
+      knownToken: KnownToken.ETH
+    }, {
+      address: '0x4CC823834038c92CFA66C40C7806959529A3D782',
+      knownToken: KnownToken.BTC
+    },
+    {
+      address: '0x6E7155bde03E582e9920421Adf14E10C15dBe890',
+      knownToken: KnownToken.LINK
+    }
+  ]
 };
