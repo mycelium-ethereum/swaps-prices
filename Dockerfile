@@ -1,11 +1,12 @@
 FROM node:18
 
-# Install app
-#WORKDIR /
 # RUN pwd
 COPY package*.json ./
 COPY tsconfig*.json ./
+COPY yarn.lock ./
 COPY src ./
+
+RUN ls
 
 RUN yarn
 RUN yarn run tsc
@@ -14,4 +15,4 @@ RUN yarn run tsc
 EXPOSE 3030
 
 # Start the server
-CMD ["node", "build/index.js"]
+CMD ["node", "dist/index.js"]
