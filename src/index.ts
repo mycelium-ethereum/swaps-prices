@@ -9,8 +9,8 @@ import cors from 'cors';
 // import BigNumber from 'bignumber.js';
 // import swaggerUi from 'swagger-ui-express';
 // import db from './db';
-import { priceRouter } from './src/routes';
-import {subscribeWsFeeds, swapsWsServer} from './src/services';
+import { priceRouter } from './routes';
+import {subscribeWsFeeds, swapsWsServer} from './services';
 // import { startSyncingKnownBalancerPoolSwaps } from './services/pools/balancer'
 // import { startSyncingValueTransfersForKnownPools } from './services/pools/valueTransfers'
 // import {

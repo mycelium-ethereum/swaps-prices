@@ -3,3 +3,5 @@ package-lock.json
 combined.log
 error.log
 dist
+
+deployment/output

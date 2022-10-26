@@ -97,7 +97,7 @@ class PriceStore {
   }
 }
 
-const priceStore = new PriceStore();
+export const priceStore = new PriceStore();
 
 // const wsConfig = {
   // Subaccount nickname
