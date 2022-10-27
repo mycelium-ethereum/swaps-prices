@@ -49,6 +49,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - uses: vmware-tanzu/carvel-setup-action@v1
+
     # Configure Workload Identity Federation and generate an access token.
     #- id: 'auth'
     # name: 'Authenticate to Google Cloud'
@@ -90,9 +92,14 @@ jobs:
       run: |-
         docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
 
+    - name: Build
+      run: cd deployment && ./generateConfig.sh schema.yml "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
+
+    - name: Apply
+      run: kubectl apply -f deployment/output/deployment.yml
+
     # Deploy sample image to the GKE cluster
     - name: Deploy
       run: |-
-        sed -e "s|IMAGE_NAME|gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA|g" ./deployment/deployment.yml | kubectl apply -f -
         kubectl rollout status deployment/$DEPLOYMENT_NAME
         kubectl get services -o wide
