@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: #@ data.values.appName
-        image: IMAGE_NAME
+        image: test
         ports:
         - containerPort: 3030
         resources:
