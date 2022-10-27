@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mkdir -p ./output
-rm -r ./output/*
+rm -rf ./output
 
 for filename in *.yml; do
   ytt -f "$filename" -f "$1" >> "./output/$(basename "$filename" .yml).yml"
