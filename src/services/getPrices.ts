@@ -6,7 +6,7 @@ type GetPriceArgs = {
   network?: any
 }
 
-const cachedPrices = {};
+const cachedPrices: Record<string, { expiry: number, tokens: Record<string, string> }> = {};
 
 // 2 second cache
 const EXPIRY_TIME = 2 * 1000;
@@ -26,7 +26,7 @@ export const getPrices = async ({ network }: GetPriceArgs) => {
   if (cache && cache.expiry < now) {
     return ({
       status: HTTP_STATUS_CODE.OK,
-      body: cache.prices
+      body: cache.tokens
     })
   }
 
