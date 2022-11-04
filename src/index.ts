@@ -1,73 +1,30 @@
-/* eslint-disable */ // allow dotenv to be used ASAP
 import dotenv from 'dotenv';
 dotenv.config({ path: './.env' });
 dotenv.config({ path: './.secrets' });
-
 import express, { ErrorRequestHandler } from 'express';
 import { json as jsonBodyParser } from 'body-parser';
 import cors from 'cors';
-// import BigNumber from 'bignumber.js';
-// import swaggerUi from 'swagger-ui-express';
-// import db from './db';
 import { priceRouter } from './routes';
-import {subscribeWsFeeds, swapsWsServer} from './services';
-// import { startSyncingKnownBalancerPoolSwaps } from './services/pools/balancer'
-// import { startSyncingValueTransfersForKnownPools } from './services/pools/valueTransfers'
-// import {
-  // startSyncingTestnetCommits,
-  // startSyncingTradeHistoryForKnownPools,
-  // startSyncingTradeHistoryForKnownPoolsV2,
-  // startSyncingUpkeeps,
-  // startSyncingUpkeepsV2,
-  // startPPV2AlertingService,
-  // startWatchingPendingCommitsForKnownPoolsV2,
-// } from './services/pools';
-// import {
-  // startSyncingSwapsTradingRewards,
-  // startSyncingSwapsReferralRewards,
-  // startSyncingPriceCandles,
-  // startSyncingPriceUpdates,
-  // startSyncingTokenStats,
-  // startSyncingSwapsMlpStats,
-  // startSyncingSwapsFeeStats,
-  // startSyncingSwapsSpreadCapture,
-  // startSyncingSwapV1Actions,
-  // startSyncingSwapsVolumes,
-  // subscribeWsFeeds
-// } from './services/trs';
-// import { apiDocumentation } from './docs/apidoc'
-// import { isProd } from './utils'
-// import swapsWsServer from './routes/swapsWebsocket';
-
-// import { TIME } from './constants';
-/* eslint-enable */
+import { subscribeWsFeeds, swapsWsServer } from './services';
 
 const app = express();
 const port = process.env.PORT || 3030;
-
-const swaggerUiOptions = {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Tracer API Documentation'
-};
 
 app.use(jsonBodyParser());
 app.use(cors());
 
 app.use('/', priceRouter);
 
-// app.use('/docs', swaggerUi.serve, swaggerUi.setup(apiDocumentation, swaggerUiOptions));
-// app.get('/spec', function (req, res) {
-  // res.status(200).send(apiDocumentation);
-// });
-
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.status(200).send({ message: 'healthy' });
 });
+
+const isProd = () => process.env.NODE_ENV === 'prod';
 
 /* eslint-disable  @typescript-eslint/no-unused-vars */
 // the unused vars in the function signature are required
 // to make express use this as error handling middleware
-const fallbackErrorHandler: ErrorRequestHandler = function (error, req, res, next) {
+const fallbackErrorHandler: ErrorRequestHandler = function (error, req, res, _next) {
   /* eslint-enable  @typescript-eslint/no-unused-vars */
   console.error('Caught Unhandled Error:', error.stack);
   console.error('Request:', JSON.stringify({
@@ -79,8 +36,7 @@ const fallbackErrorHandler: ErrorRequestHandler = function (error, req, res, nex
     cookies: req.cookies,
     ip: req.ip
   }, null, 2));
-  // if (isProd()) {
-  if (false) {
+  if (isProd()) {
     res.status(500).send({ message: 'Unhandled Error' });
   } else {
     res.status(500).send({ message: 'Unhandled Error', data: error.stack });
@@ -90,7 +46,7 @@ const fallbackErrorHandler: ErrorRequestHandler = function (error, req, res, nex
 app.use(fallbackErrorHandler);
 
 // The 404 Route (ALWAYS Keep this as the last route)
-app.use(function (req, res) {
+app.use(function (_req, res) {
   res.status(404).send('Not Found');
 });
 

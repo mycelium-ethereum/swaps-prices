@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { createBinanceWsFeeds, createBitfinexWsFeeds, createFtxWsFeeds, KnownToken, ParsedTokenPrice } from '@mycelium-ethereum/swaps-keepers';
 import { WebsocketClient } from '@mycelium-ethereum/swaps-keepers/dist/src/entities/SocketClient';
 import { NETWORKS, networkTokens } from '../constants';
-import { calcMedian } from '../utils';
+import { ethersCalcMedian as calcMedian } from '@mycelium-ethereum/swaps-keepers/dist/src/utils/helpers';
 import { v4 as uuidv4 } from 'uuid';
 import ws from 'ws';
 
@@ -17,9 +17,6 @@ swapsWsServer.on('connection', (socket: ws & { isAlive: boolean }) => {
 
   // Keep track of the stream, so that we can send all of them messages.
   connectedClients.set(socketId, socket);
-
-  socket.on('message', (data, isBinary) => {
-  });
 
   // Attach event handler to mark this client as alive when pinged.
   socket.isAlive = true;
@@ -36,7 +33,7 @@ swapsWsServer.on('connection', (socket: ws & { isAlive: boolean }) => {
 });
 
 // Broadcast to all.
-const broadcast = (data: any) => {
+export const broadcast = (data: any) => {
   swapsWsServer.clients.forEach((client) => {
     if (client.readyState === ws.OPEN) {
       client.send(JSON.stringify(data), { binary: false });
@@ -44,7 +41,7 @@ const broadcast = (data: any) => {
   });
 }
 
-setInterval(() => {
+export const pingConnectedClients = setInterval(() => {
   Array.from(connectedClients.values()).forEach((client) => {
     if (!client.isAlive) { client.terminate(); return; }
     client.isAlive = false;
@@ -95,6 +92,10 @@ class PriceStore {
       this.medianPrices[token as KnownToken] = medianPrice;
     })
   }
+  public clear () {
+    this.prices = {};
+    this.medianPrices = {};
+  }
 }
 
 export const priceStore = new PriceStore();
@@ -121,21 +122,21 @@ const onError = (info: any) => {
 }
 
 // binance client setup
-const binanceClient = new WebsocketClient('binance', {
+export const binanceClient = new WebsocketClient('binance', {
   wsUrl: `wss://stream.binance.com/stream`,
 });
 binanceClient.on('update', (data) => priceStore.storePrice('binance', data))
 binanceClient.on('error', onError)
 
 // ftx client setup
-const ftxClient = new WebsocketClient('ftx', {
+export const ftxClient = new WebsocketClient('ftx', {
   wsUrl: 'wss://ftx.com/ws/'
 })
 ftxClient.on('update', data => priceStore.storePrice('ftx', data));
 ftxClient.on('error', onError)
 
 // bitfinexClient client setup
-const bitfinexClient = new WebsocketClient('bitfinex', {
+export const bitfinexClient = new WebsocketClient('bitfinex', {
   wsUrl: 'wss://api-pub.bitfinex.com/ws/2'
 })
 bitfinexClient.on('update', data => priceStore.storePrice('bitfinex', data));

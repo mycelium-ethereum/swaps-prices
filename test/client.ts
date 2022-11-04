@@ -1,6 +1,6 @@
 import ws from 'ws';
-// const client = new ws('ws://localhost:3030');
-const client = new ws('ws://pricing.mycelium.xyz');
+const client = new ws('ws://localhost:3030');
+// const client = new ws('ws://pricing.mycelium.xyz');
 
 client.on('open', () => {
   console.log("Connectioned opened")
