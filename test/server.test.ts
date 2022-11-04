@@ -1,13 +1,13 @@
 import { KnownToken } from '@mycelium-ethereum/swaps-keepers/dist/src/';
 import { ethers } from 'ethers';
-import {
-  priceStore,
+import * as SocketService from '../src/services/swapsSocket';
+const {
   binanceClient,
   ftxClient,
   bitfinexClient,
   pingConnectedClients,
-} from '../src/services/swapsSocket';
-import * as Module from '../src/services/swapsSocket';
+} = SocketService;
+import priceStore from '../src/services/priceStore';
 
 beforeEach(() => {
   priceStore.clear()
@@ -55,7 +55,7 @@ describe("Stores prices", () => {
 
 describe("Emits median changes", () => {
   test("Catches median changes", () => {
-    let spy = jest.spyOn(Module, 'broadcast');
+    let spy = jest.spyOn(SocketService, 'broadcast');
     binanceClient.emit("update", { knownToken: KnownToken.ETH, price: ethers.BigNumber.from('999')})
     expect(priceStore.medianPrices[KnownToken.ETH].toString()).toEqual('999');
     expect(spy.mock.calls.length).toEqual(1);

@@ -1,10 +1,9 @@
-import { ethers } from 'ethers';
-import { createBinanceWsFeeds, createBitfinexWsFeeds, createFtxWsFeeds, KnownToken, ParsedTokenPrice } from '@mycelium-ethereum/swaps-keepers';
+import { createBinanceWsFeeds, createBitfinexWsFeeds, createFtxWsFeeds, KnownToken } from '@mycelium-ethereum/swaps-keepers';
 import { WebsocketClient } from '@mycelium-ethereum/swaps-keepers/dist/src/entities/SocketClient';
 import { NETWORKS, networkTokens } from '../constants';
-import { ethersCalcMedian as calcMedian } from '@mycelium-ethereum/swaps-keepers/dist/src/utils/helpers';
 import { v4 as uuidv4 } from 'uuid';
 import ws from 'ws';
+import priceStore from './priceStore';
 
 const connectedClients = new Map();
 const swapsWsServer = new ws.Server({
@@ -33,7 +32,7 @@ swapsWsServer.on('connection', (socket: ws & { isAlive: boolean }) => {
 });
 
 // Broadcast to all.
-export const broadcast = (data: any) => {
+const broadcast = (data: any) => {
   swapsWsServer.clients.forEach((client) => {
     if (client.readyState === ws.OPEN) {
       client.send(JSON.stringify(data), { binary: false });
@@ -41,7 +40,7 @@ export const broadcast = (data: any) => {
   });
 }
 
-export const pingConnectedClients = setInterval(() => {
+const pingConnectedClients = setInterval(() => {
   Array.from(connectedClients.values()).forEach((client) => {
     if (!client.isAlive) { client.terminate(); return; }
     client.isAlive = false;
@@ -49,56 +48,6 @@ export const pingConnectedClients = setInterval(() => {
   });
 }, 10000);
 
-class PriceStore {
-  prices: Partial<Record<KnownToken, any>> = {};
-  medianPrices: Partial<Record<KnownToken, ethers.BigNumber>> = {};
-
-  public storePrice (key: string, tokenPrice: ParsedTokenPrice) {
-    // console.log(tokenPrice);
-    const { knownToken, price } = tokenPrice;
-    // dont store false price
-    if (!price) {
-      console.error(`Price not found for token: ${knownToken}`)
-      return
-    }
-    if (!this.prices[knownToken]) {
-      this.prices[knownToken] = {};
-    }
-    // set above
-    (this.prices[knownToken] as any)[key] = price;
-
-    this.updateMedianPrice();
-  }
-  public updateMedianPrice () {
-    Object.keys(this.prices).map((token) => {
-      const cexPrices: Record<string, ethers.BigNumber> = this.prices[token as KnownToken];
-      if (!cexPrices) {
-        console.error("Cex prices undefined")
-        return
-      }
-      const prices: ethers.BigNumber[] = Object.values(cexPrices);
-      const medianPrice = calcMedian(prices);
-
-      const previousMedianPrice = this.medianPrices[token as KnownToken]
-
-      const medianPriceChanged = previousMedianPrice && !previousMedianPrice.eq(medianPrice);
-      if (medianPriceChanged || !previousMedianPrice) {
-        broadcast({
-          s: token,
-          p: medianPrice.toString(),
-          l: previousMedianPrice?.toString()
-        })
-      } 
-      this.medianPrices[token as KnownToken] = medianPrice;
-    })
-  }
-  public clear () {
-    this.prices = {};
-    this.medianPrices = {};
-  }
-}
-
-export const priceStore = new PriceStore();
 
 // const wsConfig = {
   // Subaccount nickname
@@ -122,21 +71,21 @@ const onError = (info: any) => {
 }
 
 // binance client setup
-export const binanceClient = new WebsocketClient('binance', {
+const binanceClient = new WebsocketClient('binance', {
   wsUrl: `wss://stream.binance.com/stream`,
 });
 binanceClient.on('update', (data) => priceStore.storePrice('binance', data))
 binanceClient.on('error', onError)
 
 // ftx client setup
-export const ftxClient = new WebsocketClient('ftx', {
+const ftxClient = new WebsocketClient('ftx', {
   wsUrl: 'wss://ftx.com/ws/'
 })
 ftxClient.on('update', data => priceStore.storePrice('ftx', data));
 ftxClient.on('error', onError)
 
 // bitfinexClient client setup
-export const bitfinexClient = new WebsocketClient('bitfinex', {
+const bitfinexClient = new WebsocketClient('bitfinex', {
   wsUrl: 'wss://api-pub.bitfinex.com/ws/2'
 })
 bitfinexClient.on('update', data => priceStore.storePrice('bitfinex', data));
@@ -154,5 +103,10 @@ const subscribeWsFeeds = () => {
 
 export {
   subscribeWsFeeds,
-  swapsWsServer
+  swapsWsServer,
+  broadcast,
+  pingConnectedClients,
+  binanceClient,
+  bitfinexClient,
+  ftxClient
 }
