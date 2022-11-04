@@ -1,6 +1,5 @@
 import { KnownToken } from '@mycelium-ethereum/swaps-keepers/dist/src/';
 import { ethers } from 'ethers';
-// jest.mock("../src/services/swapsSocket");
 import {
   priceStore,
   binanceClient,
