@@ -1,3 +1,4 @@
+import {ethers} from "ethers";
 import { networkTokens } from "../constants";
 import { HTTP_STATUS_CODE } from "../constants/requests";
 import { priceStore } from './swapsSocket';
@@ -37,7 +38,8 @@ export const getPrices = async ({ network }: GetPriceArgs) => {
   knownTokens.forEach((token) => {
     const medianPrice = priceStore.medianPrices[token.knownToken];
     if (priceStore.medianPrices[token.knownToken]) {
-      tokens[token.address] = medianPrice.toString();
+      // we want to be in 10^30 units but prices are stored at 10^18
+      tokens[token.address] = ethers.utils.parseUnits(medianPrice.toString(), 12 /* 30 - 18 */).toString();
     }
   })
 
