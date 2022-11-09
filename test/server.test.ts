@@ -5,7 +5,6 @@ const {
   binanceClient,
   ftxClient,
   bitfinexClient,
-  pingConnectedClients,
 } = SocketService;
 import priceStore from '../src/services/priceStore';
 
@@ -14,7 +13,6 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  clearInterval(pingConnectedClients)
 })
 
 

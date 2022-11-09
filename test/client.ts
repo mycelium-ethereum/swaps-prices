@@ -1,5 +1,6 @@
 import {ethers} from 'ethers';
 import ws from 'ws';
+import { parseRawWsMessage } from './clientTestUtils';
 // const client = new ws('ws://localhost:3030');
 const client = new ws('wss://pricing.mycelium.xyz');
 
@@ -26,19 +27,3 @@ client.on('ping', () => {
   client.pong()
 })
 
-export function parseRawWsMessage(event: any): any {
-  if (typeof event === 'string') {
-    const parsedEvent = JSON.parse(event);
-
-    if (parsedEvent.data) {
-      if (typeof parsedEvent.data === 'string') {
-        return parseRawWsMessage(parsedEvent.data);
-      }
-      return parsedEvent.data;
-    }
-  }
-  if (event?.data) {
-    return JSON.parse(event.data);
-  }
-  return event;
-}

@@ -5,7 +5,7 @@ import express, { ErrorRequestHandler } from 'express';
 import { json as jsonBodyParser } from 'body-parser';
 import cors from 'cors';
 import { priceRouter } from './routes';
-import { subscribeWsFeeds, swapsWsServer } from './services';
+import { startWebsocketServer, subscribeWsFeeds, startPingingConnectedClients } from './services';
 
 const app = express();
 const port = process.env.PORT || 3030;
@@ -55,13 +55,9 @@ const main = async () => {
     console.log(`Tracer API listening on port ${port}`);
   });
 
+  startWebsocketServer(server);
   subscribeWsFeeds();
-  // handle server upgrade on ws
-  server.on('upgrade', (request, socket, head) => {
-    swapsWsServer.handleUpgrade(request, socket, head, socket => {
-      swapsWsServer.emit('connection', socket, request);
-    });
-  });
+  startPingingConnectedClients();
 }
 
 main()
