@@ -39,6 +39,7 @@ class PriceStore {
       const medianPriceChanged = previousMedianPrice && !previousMedianPrice.eq(medianPrice);
       if (medianPriceChanged || !previousMedianPrice) {
         broadcast({
+          t: "update",
           s: token,
           p: medianPrice.toString(),
           l: previousMedianPrice?.toString()

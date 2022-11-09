@@ -1,8 +1,8 @@
 import {ethers} from 'ethers';
 import ws from 'ws';
 import { parseRawWsMessage } from './clientTestUtils';
-// const client = new ws('ws://localhost:3030');
-const client = new ws('wss://pricing.mycelium.xyz');
+const client = new ws('ws://localhost:3030');
+// const client = new ws('wss://pricing.mycelium.xyz');
 
 client.on('open', () => {
   console.log("Connectioned opened")
@@ -14,6 +14,9 @@ client.on('close', () => {
 
 client.onmessage = (message) => {
   const msg = parseRawWsMessage(message);
+  if (msg.t !== 'update') {
+    return;
+  }
   const lastPrice = ethers.BigNumber.from(msg.l);
   const newPrice = ethers.BigNumber.from(msg.p);
   const delta = lastPrice.sub(newPrice).abs();
@@ -22,8 +25,8 @@ client.onmessage = (message) => {
   console.log(`Received update`, { ...msg, difference: `${ethers.utils.formatEther(diff)}%`});
 }
 
-client.on('ping', () => {
-  console.log("Received ping")
-  client.pong()
-})
+setInterval(() => {
+  console.log("Sending heartbeat");
+  // client.ping();
+}, 10000)
 

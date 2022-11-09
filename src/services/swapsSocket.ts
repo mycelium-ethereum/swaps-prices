@@ -14,7 +14,7 @@ swapsWsServer.on('connection', (socket: ws & { isAlive: boolean }) => {
   const socketId = uuidv4();
   console.log(`Connecting client: ${socketId}`);
 
-  socket.send(JSON.stringify({ type: 'connected', id: socketId }), { binary: false });
+  socket.send(JSON.stringify({ t: 'connected', id: socketId }), { binary: false });
 
   // Keep track of the stream, so that we can send all of them messages.
   connectedClients.set(socketId, socket);

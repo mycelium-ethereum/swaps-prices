@@ -6,7 +6,7 @@ const {
   connectedClients
 } = SocketService;
 
-import { delay, startServer, waitForHealthCheck, waitForSocketState } from './clientTestUtils';
+import { startServer, waitForHealthCheck, waitForSocketState } from './clientTestUtils';
 import { parseRawWsMessage } from './clientTestUtils';
 
 const port = 3000;
@@ -99,7 +99,7 @@ describe("Connected clients", () => {
     let clientKey: any;
     client.onmessage = (event: any) => {
       const msg = parseRawWsMessage(event)
-      if (msg.type === "connected") {
+      if (msg.t === "connected") {
         clientKey = msg.id;
       }
     }
