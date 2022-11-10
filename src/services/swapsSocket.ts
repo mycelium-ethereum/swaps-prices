@@ -1,10 +1,9 @@
-import { ethers } from 'ethers';
-import { createBinanceWsFeeds, createBitfinexWsFeeds, createCryptoComWsFeeds, createCoinbaseWsFeeds, KnownToken, ParsedTokenPrice } from '@mycelium-ethereum/swaps-keepers';
+import { createBinanceWsFeeds, createBitfinexWsFeeds, createCryptoComWsFeeds, createCoinbaseWsFeeds, KnownToken } from '@mycelium-ethereum/swaps-keepers';
 import { WebsocketClient } from '@mycelium-ethereum/swaps-keepers/dist/src/entities/SocketClient';
 import { NETWORKS, networkTokens } from '../constants';
-import { calcMedian } from '../utils';
 import { v4 as uuidv4 } from 'uuid';
 import ws from 'ws';
+import priceStore from './priceStore';
 
 const connectedClients = new Map();
 const swapsWsServer = new ws.Server({
@@ -15,16 +14,15 @@ swapsWsServer.on('connection', (socket: ws & { isAlive: boolean }) => {
   const socketId = uuidv4();
   console.log(`Connecting client: ${socketId}`);
 
+  socket.send(JSON.stringify({ t: 'connected', id: socketId }), { binary: false });
+
   // Keep track of the stream, so that we can send all of them messages.
   connectedClients.set(socketId, socket);
 
-  socket.on('message', (data, isBinary) => {
-  });
-
   // Attach event handler to mark this client as alive when pinged.
   socket.isAlive = true;
-  socket.on('pong', () => { 
-    console.log(`Received pong. Keeping ${socketId} alive`);
+  socket.on('ping', () => { 
+    console.log(`Received ping. Keeping ${socketId} alive`);
     socket.isAlive = true;
   });
 
@@ -44,60 +42,17 @@ const broadcast = (data: any) => {
   });
 }
 
-setInterval(() => {
-  Array.from(connectedClients.values()).forEach((client) => {
+
+const checkClients = () => {
+  Array.from(connectedClients.keys()).forEach((clientKey) => {
+    const client = connectedClients.get(clientKey);
     if (!client.isAlive) { client.terminate(); return; }
     client.isAlive = false;
-    client.ping();
   });
-}, 10000);
-
-class PriceStore {
-  prices: Partial<Record<KnownToken, any>> = {};
-  medianPrices: Partial<Record<KnownToken, ethers.BigNumber>> = {};
-
-  public storePrice (key: string, tokenPrice: ParsedTokenPrice) {
-    // console.log(tokenPrice);
-    const { knownToken, price } = tokenPrice;
-    // dont store false price
-    if (!price) {
-      console.error(`Price not found for token: ${knownToken}`)
-      return
-    }
-    if (!this.prices[knownToken]) {
-      this.prices[knownToken] = {};
-    }
-    // set above
-    (this.prices[knownToken] as any)[key] = price;
-
-    this.updateMedianPrice();
-  }
-  public updateMedianPrice () {
-    Object.keys(this.prices).map((token) => {
-      const cexPrices: Record<string, ethers.BigNumber> = this.prices[token as KnownToken];
-      if (!cexPrices) {
-        console.error("Cex prices undefined")
-        return
-      }
-      const prices: ethers.BigNumber[] = Object.values(cexPrices);
-      const medianPrice = calcMedian(prices);
-
-      const previousMedianPrice = this.medianPrices[token as KnownToken]
-
-      const medianPriceChanged = previousMedianPrice && !previousMedianPrice.eq(medianPrice);
-      if (medianPriceChanged || !previousMedianPrice) {
-        broadcast({
-          s: token,
-          p: medianPrice.toString(),
-          l: previousMedianPrice?.toString()
-        })
-      } 
-      this.medianPrices[token as KnownToken] = medianPrice;
-    })
-  }
 }
 
-export const priceStore = new PriceStore();
+const startPingingConnectedClients = (intervalMs: number = 10000) => setInterval(checkClients, intervalMs);
+
 
 // const wsConfig = {
   // Subaccount nickname
@@ -167,7 +122,24 @@ const subscribeWsFeeds = () => {
   coinbaseClient.subscribe(createCoinbaseWsFeeds(tokens))
 }
 
+const startWebsocketServer = (server: any) => {
+  // handle server upgrade on ws
+  server.on('upgrade', (request, socket, head) => {
+    swapsWsServer.handleUpgrade(request, socket, head, socket => {
+      swapsWsServer.emit('connection', socket, request);
+    });
+  });
+}
+
 export {
   subscribeWsFeeds,
-  swapsWsServer
+  startWebsocketServer,
+  swapsWsServer,
+  broadcast,
+  startPingingConnectedClients,
+  checkClients,
+  connectedClients,
+  binanceClient,
+  bitfinexClient,
+  ftxClient
 }
