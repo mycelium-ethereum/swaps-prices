@@ -1,7 +1,7 @@
 import {ethers} from "ethers";
 import { networkTokens } from "../constants";
 import { HTTP_STATUS_CODE } from "../constants/requests";
-import { priceStore } from './swapsSocket';
+import priceStore from './priceStore';
 
 type GetPriceArgs = {
   network?: any
