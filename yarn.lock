@@ -417,16 +417,16 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@mycelium-ethereum/swaps-keepers@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@mycelium-ethereum/swaps-keepers/-/swaps-keepers-0.0.9.tgz#4999a72f6c0b8471ba17ff07e8c2b5bb362738e5"
-  integrity sha512-SlI9dpuuA7B+E50l5A9GnDk1CNq7p5uB1alaIcraX1jovbkztK0kYrmvb4M+ATzKKsuhK0kZucjBo5vs6l0xMw==
+"@mycelium-ethereum/swaps-keepers@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mycelium-ethereum/swaps-keepers/-/swaps-keepers-0.1.0.tgz#4c5a7d545dddd33be294f540e1a315d4ed1ef80b"
+  integrity sha512-aULpc5uaDZYzJh+jd3gL/mkIel0/HiYw8+nNrjqRS+WQDkqe3x4VR1p6EFSHazPzIxUK9qKv02eNX2nPE4Uqvg==
   dependencies:
     "@types/node-fetch" "^2.6.1"
     bignumber.js "^9.0.2"
     bn.js "^5.2.1"
     dotenv "^16.0.1"
-    ethers "^5.6.8"
+    ethers "^5.7.2"
     express "^4.18.1"
     nanoevents "^7.0.1"
     node-fetch "2.6"
@@ -1083,7 +1083,7 @@ etag@~1.8.1:
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==
 
-ethers@^5.6.8, ethers@^5.7.2:
+ethers@^5.7.2:
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.7.2.tgz#3a7deeabbb8c030d4126b24f84e525466145872e"
   integrity sha512-wswUsmWo1aOK8rR7DIKiWSw9DbLWe6x98Jrn8wcTflTVvaXhAMaB5zGAXy0GYQEQp9iO1iSHWVyARQm11zUtyg==

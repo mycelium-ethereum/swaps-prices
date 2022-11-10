@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { createBinanceWsFeeds, createBitfinexWsFeeds, createFtxWsFeeds, KnownToken, ParsedTokenPrice } from '@mycelium-ethereum/swaps-keepers';
+import { createBinanceWsFeeds, createBitfinexWsFeeds, createCryptoComWsFeeds, createCoinbaseWsFeeds, KnownToken, ParsedTokenPrice } from '@mycelium-ethereum/swaps-keepers';
 import { WebsocketClient } from '@mycelium-ethereum/swaps-keepers/dist/src/entities/SocketClient';
 import { NETWORKS, networkTokens } from '../constants';
 import { calcMedian } from '../utils';
@@ -141,14 +141,30 @@ const bitfinexClient = new WebsocketClient('bitfinex', {
 bitfinexClient.on('update', data => priceStore.storePrice('bitfinex', data));
 bitfinexClient.on('error', onError)
 
+// crypto.com client setup
+const cryptoComClient = new WebsocketClient('cryptoCom', {
+  wsUrl: `wss://stream.crypto.com/v2/market`,
+});
+cryptoComClient.on('update', (data) => priceStore.storePrice('cryptoCom', data))
+cryptoComClient.on('error', onError)
+
+// coinbase client setup
+const coinbaseClient = new WebsocketClient('coinbase', {
+  wsUrl: 'wss://ws-feed.exchange.coinbase.com'
+})
+coinbaseClient.on('update', data => priceStore.storePrice('coinbase', data));
+coinbaseClient.on('error', onError)
+
 /**
  * Subscribes each feed to a list of known tokens
  */
 const subscribeWsFeeds = () => {
   const tokens: KnownToken[] = networkTokens[NETWORKS.ARBITRUM_MAINNET].map((token) => token.knownToken);
   bitfinexClient.subscribe(createBitfinexWsFeeds(tokens))
-  ftxClient.subscribe(createFtxWsFeeds(tokens))
+  // ftxClient.subscribe(createFtxWsFeeds(tokens))
   binanceClient.subscribe(createBinanceWsFeeds(tokens))
+  cryptoComClient.subscribe(createCryptoComWsFeeds(tokens))
+  coinbaseClient.subscribe(createCoinbaseWsFeeds(tokens))
 }
 
 export {
