@@ -97,11 +97,11 @@ bitfinexClient.on('update', data => priceStore.storePrice('bitfinex', data));
 bitfinexClient.on('error', onError)
 
 // crypto.com client setup
-// const cryptoComClient = new WebsocketClient('cryptoCom', {
-  // wsUrl: `wss://stream.crypto.com/v2/market`,
-// });
-// cryptoComClient.on('update', (data) => priceStore.storePrice('cryptoCom', data))
-// cryptoComClient.on('error', onError)
+const cryptoComClient = new WebsocketClient('cryptoCom', {
+  wsUrl: `wss://stream.crypto.com/v2/market`,
+});
+cryptoComClient.on('update', (data) => priceStore.storePrice('cryptoCom', data))
+cryptoComClient.on('error', onError)
 
 // coinbase client setup
 const coinbaseClient = new WebsocketClient('coinbase', {
@@ -118,7 +118,7 @@ const subscribeWsFeeds = () => {
   bitfinexClient.subscribe(createBitfinexWsFeeds(tokens))
   // ftxClient.subscribe(createFtxWsFeeds(tokens))
   binanceClient.subscribe(createBinanceWsFeeds(tokens))
-  // cryptoComClient.subscribe(createCryptoComWsFeeds(tokens))
+  cryptoComClient.subscribe(createCryptoComWsFeeds(tokens))
   coinbaseClient.subscribe(createCoinbaseWsFeeds(tokens))
 }
 

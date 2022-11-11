@@ -5,11 +5,10 @@ import { broadcast } from "./swapsSocket";
 
 
 class PriceStore {
-  prices: Partial<Record<KnownToken, any>> = {};
+  prices: Partial<Record<KnownToken, Record<string, { price: ethers.BigNumber, updated: number }>>> = {};
   medianPrices: Partial<Record<KnownToken, ethers.BigNumber>> = {};
 
   public storePrice (key: string, tokenPrice: ParsedTokenPrice) {
-    // console.log(tokenPrice);
     const { knownToken, price } = tokenPrice;
     // dont store false price
     if (!price) {
@@ -20,34 +19,36 @@ class PriceStore {
       this.prices[knownToken] = {};
     }
     // set above
-    (this.prices[knownToken] as any)[key] = price;
+    (this.prices[knownToken] as any)[key] = {
+      price: price,
+      updated: Date.now()
+    };
 
-    this.updateMedianPrice();
+    this.updateMedianPrice(knownToken);
   }
-  public updateMedianPrice () {
-    Object.keys(this.prices).map((token) => {
-      const cexPrices: Record<string, ethers.BigNumber> = this.prices[token as KnownToken];
-      if (!cexPrices) {
-        console.error("Cex prices undefined")
-        return
-      }
-      const prices: ethers.BigNumber[] = Object.values(cexPrices);
-      const medianPrice = calcMedian(prices);
+  public updateMedianPrice (token: KnownToken) {
+    const cexPrices = this.prices[token as KnownToken];
+    if (!cexPrices) {
+      console.error("Cex prices undefined")
+      return
+    }
+    const prices: ethers.BigNumber[] = Object.values(cexPrices).map((prices) => prices.price);
+    const medianPrice = calcMedian(prices);
 
-      const previousMedianPrice = this.medianPrices[token as KnownToken]
+    const previousMedianPrice = this.medianPrices[token as KnownToken]
 
-      const medianPriceChanged = previousMedianPrice && !previousMedianPrice.eq(medianPrice);
-      if (medianPriceChanged || !previousMedianPrice) {
-        broadcast({
-          t: "update",
-          s: token,
-          p: medianPrice.toString(),
-          l: previousMedianPrice?.toString()
-        })
-      } 
-      this.medianPrices[token as KnownToken] = medianPrice;
-    })
+    const medianPriceChanged = previousMedianPrice && !previousMedianPrice.eq(medianPrice);
+    if (medianPriceChanged || !previousMedianPrice) {
+      broadcast({
+        t: "update",
+        s: token,
+        p: medianPrice.toString(),
+        l: previousMedianPrice?.toString()
+      })
+    } 
+    this.medianPrices[token as KnownToken] = medianPrice;
   }
+
   public clear () {
     this.prices = {};
     this.medianPrices = {};
