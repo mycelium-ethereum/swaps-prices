@@ -5,7 +5,7 @@ import { broadcast } from "./swapsSocket";
 
 
 class PriceStore {
-  prices: Partial<Record<KnownToken, any>> = {};
+  prices: Partial<Record<KnownToken, Record<string, { price: ethers.BigNumber, updated: number }>>> = {};
   medianPrices: Partial<Record<KnownToken, ethers.BigNumber>> = {};
 
   public storePrice (key: string, tokenPrice: ParsedTokenPrice) {
@@ -19,17 +19,20 @@ class PriceStore {
       this.prices[knownToken] = {};
     }
     // set above
-    (this.prices[knownToken] as any)[key] = price;
+    (this.prices[knownToken] as any)[key] = {
+      price: price,
+      updated: Date.now()
+    };
 
     this.updateMedianPrice(knownToken);
   }
   public updateMedianPrice (token: KnownToken) {
-    const cexPrices: Record<string, ethers.BigNumber> = this.prices[token as KnownToken];
+    const cexPrices = this.prices[token as KnownToken];
     if (!cexPrices) {
       console.error("Cex prices undefined")
       return
     }
-    const prices: ethers.BigNumber[] = Object.values(cexPrices);
+    const prices: ethers.BigNumber[] = Object.values(cexPrices).map((prices) => prices.price);
     const medianPrice = calcMedian(prices);
 
     const previousMedianPrice = this.medianPrices[token as KnownToken]
