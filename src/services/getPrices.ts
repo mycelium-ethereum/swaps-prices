@@ -1,5 +1,5 @@
-import {ethersCalcMedian} from "@mycelium-ethereum/swaps-keepers/dist/src/utils/helpers";
-import {ethers} from "ethers";
+import { ethersCalcMedian } from "@mycelium-ethereum/swaps-keepers/dist/src/utils/helpers";
+import { ethers } from "ethers";
 import { networkTokens } from "../constants";
 import { HTTP_STATUS_CODE } from "../constants/requests";
 import priceStore from './priceStore';
