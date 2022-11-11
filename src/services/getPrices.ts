@@ -24,7 +24,7 @@ export const getPrices = async ({ network }: GetPriceArgs) => {
 
   const cache = cachedPrices[network];
 
-  if (cache && cache.expiry < now) {
+  if (cache && cache.expiry > now) {
     return ({
       status: HTTP_STATUS_CODE.OK,
       body: cache.tokens
