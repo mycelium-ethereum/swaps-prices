@@ -38,8 +38,23 @@ export const getPrices = async ({ network }: GetPriceArgs) => {
   knownTokens.forEach((token) => {
     const medianPrice = priceStore.medianPrices[token.knownToken];
     if (priceStore.medianPrices[token.knownToken]) {
+      let oldestPrice: number;
+      let cexPrices = {};
+      const allPrices = priceStore.prices[token.knownToken];
+      Object.keys(allPrices).forEach((priceKey) => {
+        const { price, updated } = allPrices[priceKey];
+        cexPrices[priceKey] = ethers.utils.parseUnits(price.toString(), 12 /* 30 - 18 */).toString()
+        if (updated < oldestPrice || !oldestPrice) {
+          oldestPrice = updated
+        }
+      })
+
       // we want to be in 10^30 units but prices are stored at 10^18
-      tokens[token.address] = ethers.utils.parseUnits(medianPrice.toString(), 12 /* 30 - 18 */).toString();
+      tokens[token.address] = {
+        price: ethers.utils.parseUnits(medianPrice.toString(), 12 /* 30 - 18 */).toString(),
+        oldestPrice,
+        ...cexPrices,
+      }
     }
   })
 
