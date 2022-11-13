@@ -1,6 +1,8 @@
+import { ethersCalcMedian } from "@mycelium-ethereum/swaps-keepers/dist/src/utils/helpers";
+import { ethers } from "ethers";
 import { networkTokens } from "../constants";
 import { HTTP_STATUS_CODE } from "../constants/requests";
-import { priceStore } from './swapsSocket';
+import priceStore from './priceStore';
 
 type GetPriceArgs = {
   network?: any
@@ -23,7 +25,7 @@ export const getPrices = async ({ network }: GetPriceArgs) => {
 
   const cache = cachedPrices[network];
 
-  if (cache && cache.expiry < now) {
+  if (cache && cache.expiry > now) {
     return ({
       status: HTTP_STATUS_CODE.OK,
       body: cache.tokens
@@ -37,7 +39,21 @@ export const getPrices = async ({ network }: GetPriceArgs) => {
   knownTokens.forEach((token) => {
     const medianPrice = priceStore.medianPrices[token.knownToken];
     if (priceStore.medianPrices[token.knownToken]) {
-      tokens[token.address] = medianPrice.toString();
+      const allPrices = priceStore.prices[token.knownToken];
+      const cexPrices = Object.keys(allPrices).reduce((o, priceKey) => ({
+        ...o,
+        [priceKey]: ethers.utils.parseUnits(allPrices[priceKey].price.toString(), 12 /* 30 - 18 */).toString()
+      }), {})
+
+      const priceAges = Object.values(allPrices).map((price) => ethers.BigNumber.from(price.updated))
+      const medianAge = ethersCalcMedian(priceAges)
+
+      // we want to be in 10^30 units but prices are stored at 10^18
+      tokens[token.address] = {
+        price: ethers.utils.parseUnits(medianPrice.toString(), 12 /* 30 - 18 */).toString(),
+        medianAge: medianAge.toNumber(),
+        ...cexPrices,
+      }
     }
   })
 

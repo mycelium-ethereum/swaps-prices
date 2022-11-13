@@ -1,4 +1,4 @@
-import { createBinanceWsFeeds, createBitfinexWsFeeds, createFtxWsFeeds, KnownToken } from '@mycelium-ethereum/swaps-keepers';
+import { createBinanceWsFeeds, createBitfinexWsFeeds, createCryptoComWsFeeds, createCoinbaseWsFeeds, KnownToken } from '@mycelium-ethereum/swaps-keepers';
 import { WebsocketClient } from '@mycelium-ethereum/swaps-keepers/dist/src/entities/SocketClient';
 import { NETWORKS, networkTokens } from '../constants';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,13 +14,15 @@ swapsWsServer.on('connection', (socket: ws & { isAlive: boolean }) => {
   const socketId = uuidv4();
   console.log(`Connecting client: ${socketId}`);
 
+  socket.send(JSON.stringify({ t: 'connected', id: socketId }), { binary: false });
+
   // Keep track of the stream, so that we can send all of them messages.
   connectedClients.set(socketId, socket);
 
   // Attach event handler to mark this client as alive when pinged.
   socket.isAlive = true;
-  socket.on('pong', () => { 
-    console.log(`Received pong. Keeping ${socketId} alive`);
+  socket.on('ping', () => { 
+    console.log(`Received ping. Keeping ${socketId} alive`);
     socket.isAlive = true;
   });
 
@@ -40,13 +42,16 @@ const broadcast = (data: any) => {
   });
 }
 
-const pingConnectedClients = setInterval(() => {
-  Array.from(connectedClients.values()).forEach((client) => {
+
+const checkClients = () => {
+  Array.from(connectedClients.keys()).forEach((clientKey) => {
+    const client = connectedClients.get(clientKey);
     if (!client.isAlive) { client.terminate(); return; }
     client.isAlive = false;
-    client.ping();
   });
-}, 10000);
+}
+
+const startPingingConnectedClients = (intervalMs: number = 10000) => setInterval(checkClients, intervalMs);
 
 
 // const wsConfig = {
@@ -91,21 +96,49 @@ const bitfinexClient = new WebsocketClient('bitfinex', {
 bitfinexClient.on('update', data => priceStore.storePrice('bitfinex', data));
 bitfinexClient.on('error', onError)
 
+// crypto.com client setup
+const cryptoComClient = new WebsocketClient('cryptoCom', {
+  wsUrl: `wss://stream.crypto.com/v2/market`,
+});
+cryptoComClient.on('update', (data) => priceStore.storePrice('cryptoCom', data))
+cryptoComClient.on('error', onError)
+
+// coinbase client setup
+const coinbaseClient = new WebsocketClient('coinbase', {
+  wsUrl: 'wss://ws-feed.exchange.coinbase.com'
+})
+coinbaseClient.on('update', data => priceStore.storePrice('coinbase', data));
+coinbaseClient.on('error', onError)
+
 /**
  * Subscribes each feed to a list of known tokens
  */
 const subscribeWsFeeds = () => {
   const tokens: KnownToken[] = networkTokens[NETWORKS.ARBITRUM_MAINNET].map((token) => token.knownToken);
   bitfinexClient.subscribe(createBitfinexWsFeeds(tokens))
-  ftxClient.subscribe(createFtxWsFeeds(tokens))
+  // ftxClient.subscribe(createFtxWsFeeds(tokens))
   binanceClient.subscribe(createBinanceWsFeeds(tokens))
+  cryptoComClient.subscribe(createCryptoComWsFeeds(tokens))
+  coinbaseClient.subscribe(createCoinbaseWsFeeds(tokens))
+}
+
+const startWebsocketServer = (server: any) => {
+  // handle server upgrade on ws
+  server.on('upgrade', (request, socket, head) => {
+    swapsWsServer.handleUpgrade(request, socket, head, socket => {
+      swapsWsServer.emit('connection', socket, request);
+    });
+  });
 }
 
 export {
   subscribeWsFeeds,
+  startWebsocketServer,
   swapsWsServer,
   broadcast,
-  pingConnectedClients,
+  startPingingConnectedClients,
+  checkClients,
+  connectedClients,
   binanceClient,
   bitfinexClient,
   ftxClient
