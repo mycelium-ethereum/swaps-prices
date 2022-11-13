@@ -42,7 +42,6 @@ const broadcast = (data: any) => {
   });
 }
 
-
 const checkClients = () => {
   Array.from(connectedClients.keys()).forEach((clientKey) => {
     const client = connectedClients.get(clientKey);
@@ -52,7 +51,6 @@ const checkClients = () => {
 }
 
 const startPingingConnectedClients = (intervalMs: number = 10000) => setInterval(checkClients, intervalMs);
-
 
 // const wsConfig = {
   // Subaccount nickname
