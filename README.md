@@ -31,3 +31,14 @@ Requires `network` query param which can be one of
 - Arbitrum mainnet `42161`
 - Arbitrum Goerli `421613`
 - (Deprecated) Arbitrum Rinkeby `421611`
+
+The route returns an object of the structure
+```
+{
+    [key: Address]: {
+        price": string, // (median price of asset in 10^30)
+        medianAge: number, // (median age of prices. This gets updated each time a price is stored in the priceStore from the CEX. Useful to detect stale prices when websockets arent functioning as they should. Can fall back on some other price stream or fire an alert)
+        ...CEX_PRICES, // (more key value price pairs relating to each of the centralised exchanges feeding the price for this asset)
+    }
+}
+```
