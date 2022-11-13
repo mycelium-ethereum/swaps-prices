@@ -17,9 +17,10 @@ Messages are emitted when the median price changes.
 Example event
 ```
 {
+    t: // type of event will be 'update'
     s: // token symbol
-    p: // median price
-    l: // last median price
+    p: // median price (in 10^18 decimals)
+    l: // last median price (in 10^18 decimals, can be used to calculate difference)
 }
 ```
 To determine if this update will trigger a price update, the keepers check if the delta between `p` and `l` is above some threshold.
