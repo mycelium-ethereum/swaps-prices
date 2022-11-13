@@ -27,5 +27,7 @@ To determine if this update will trigger a price update, the keepers check if th
 
 ### REST Endpoint
 This services exposes a `/prices` route which emits the current median prices for each of the networks tokens. These prices are formatted in 10^30 decimals.
-
-
+Requires `network` query param which can be one of 
+- Arbitrum mainnet `42161`
+- Arbitrum Goerli `421613`
+- (Deprecated) Arbitrum Rinkeby `421611`
