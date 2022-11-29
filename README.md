@@ -10,8 +10,12 @@ You can run this service locally or dockerize.
 To run locally simply start the servie with `yarn dev`
 
 
-### Websocket Events
+## Websocket
 An example client is written in `./test/client.ts` and can be started by running `yarn client`.
+
+Note: It is required to ping the server every 60 seconds otherwise the server will automatically close the connection
+
+### Websocket Events
 
 Messages are emitted when the median price changes.
 Example event

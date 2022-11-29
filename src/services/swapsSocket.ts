@@ -50,7 +50,8 @@ const checkClients = () => {
   });
 }
 
-const startPingingConnectedClients = (intervalMs: number = 10000) => setInterval(checkClients, intervalMs);
+// default to 60 seconds
+const startPingingConnectedClients = (intervalMs: number = 60 * 1000) => setInterval(checkClients, intervalMs);
 
 // const wsConfig = {
   // Subaccount nickname
