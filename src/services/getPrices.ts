@@ -23,47 +23,55 @@ export const getPrices = async ({ network }: GetPriceArgs) => {
     })
   }
 
-  const cache = cachedPrices[network];
+  try {
+    const cache = cachedPrices[network];
 
-  if (cache && cache.expiry > now) {
+    if (cache && cache.expiry > now) {
+      return ({
+        status: HTTP_STATUS_CODE.OK,
+        body: cache.tokens
+      })
+    }
+
+    const knownTokens = networkTokens[network];
+
+    const tokens = {};
+
+    knownTokens.forEach((token) => {
+      const medianPrice = priceStore.medianPrices[token.knownToken];
+      if (priceStore.medianPrices[token.knownToken]) {
+        const allPrices = priceStore.prices[token.knownToken];
+        const cexPrices = Object.keys(allPrices).reduce((o, priceKey) => ({
+          ...o,
+          [priceKey]: ethers.utils.parseUnits(allPrices[priceKey].price.toString(), 12 /* 30 - 18 */).toString()
+        }), {})
+
+        const priceAges = Object.values(allPrices).map((price) => ethers.BigNumber.from(price.updated))
+        const medianAge = ethersCalcMedian(priceAges)
+
+        // we want to be in 10^30 units but prices are stored at 10^18
+        tokens[token.address] = {
+          price: ethers.utils.parseUnits(medianPrice.toString(), 12 /* 30 - 18 */).toString(),
+          medianAge: medianAge.toNumber(),
+          ...cexPrices,
+        }
+      }
+    })
+
+    cachedPrices[network] = {
+      expiry: now + EXPIRY_TIME,
+      tokens
+    }
+
     return ({
       status: HTTP_STATUS_CODE.OK,
-      body: cache.tokens
+      body: tokens
+    })
+  } catch (error) {
+    console.error("Failed to fetch prices", error)
+    return ({
+      status: HTTP_STATUS_CODE.BAD_REQUEST,
+      body: { message: "UNKNOWN_ERROR" }
     })
   }
-
-  const knownTokens = networkTokens[network];
-
-  const tokens = {};
-
-  knownTokens.forEach((token) => {
-    const medianPrice = priceStore.medianPrices[token.knownToken];
-    if (priceStore.medianPrices[token.knownToken]) {
-      const allPrices = priceStore.prices[token.knownToken];
-      const cexPrices = Object.keys(allPrices).reduce((o, priceKey) => ({
-        ...o,
-        [priceKey]: ethers.utils.parseUnits(allPrices[priceKey].price.toString(), 12 /* 30 - 18 */).toString()
-      }), {})
-
-      const priceAges = Object.values(allPrices).map((price) => ethers.BigNumber.from(price.updated))
-      const medianAge = ethersCalcMedian(priceAges)
-
-      // we want to be in 10^30 units but prices are stored at 10^18
-      tokens[token.address] = {
-        price: ethers.utils.parseUnits(medianPrice.toString(), 12 /* 30 - 18 */).toString(),
-        medianAge: medianAge.toNumber(),
-        ...cexPrices,
-      }
-    }
-  })
-
-  cachedPrices[network] = {
-    expiry: now + EXPIRY_TIME,
-    tokens
-  }
-
-  return ({
-    status: HTTP_STATUS_CODE.OK,
-    body: tokens
-  })
 }
