@@ -69,9 +69,10 @@ export const getPrices = async ({ network }: GetPriceArgs) => {
     })
   } catch (error) {
     console.error("Failed to fetch prices", error)
-    return ({
-      status: HTTP_STATUS_CODE.BAD_REQUEST,
-      body: { message: "UNKNOWN_ERROR" }
-    })
+    // return ({
+      // status: HTTP_STATUS_CODE.BAD_REQUEST,
+      // body: { message: "FETCH_FAILED" }
+    // })
+    // throw error
   }
 }
