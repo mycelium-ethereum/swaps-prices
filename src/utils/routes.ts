@@ -7,6 +7,7 @@ export const routeWithErrorHandling = (handler: (req: Request, res: Response) =>
   try {
     await handler(req, res);
   } catch (error) {
+    console.log("Failed to fetch prices", error)
     next(error);
   }
 };
