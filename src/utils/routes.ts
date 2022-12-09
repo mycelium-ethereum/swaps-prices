@@ -7,6 +7,7 @@ export const routeWithErrorHandling = (handler: (req: Request, res: Response) =>
   try {
     await handler(req, res);
   } catch (error) {
+    console.error("Failed to fetch route", error)
     next(error);
   }
 };
